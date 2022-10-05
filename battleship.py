@@ -19,9 +19,14 @@ class Map:
 				return False
 			return True
 
-		def add_boat(i):
+		def remove_boat():
+				self.print_grid()
+				for coordinate in self.boats.pop(-1):
+					self.grid[coordinate['y']][coordinate['x']] = self.empty_symbol
+
+		def add_boat(boat_size, boat_name, i):
 			def get_orientation():
-				print("To place the boat horizontaly enter h, to place it verticaly enter v")
+				print("To place the boat horizontaly enter h\nTo place it verticaly enter v")
 				orientation = input().lower()
 				if orientation != 'h' and orientation != 'v':
 					self.print_grid()
@@ -29,12 +34,18 @@ class Map:
 					orientation = get_orientation()
 				return orientation
 
-			def remove_boat():
-				self.print_grid()
-				for coordinate in self.boats.pop(-1):
-					self.grid[coordinate['y']][coordinate['x']] = self.empty_symbol
-
 			def get_user_input():
+				def boat_is_on_the_way():
+					for add_me in range(boat_size):
+						if orientation == 'h' \
+							and self.grid[user_input.y][user_input.x + add_me] \
+							== self.boat_symbol:
+							return True
+						elif orientation == 'v' \
+							and self.grid[user_input.y + add_me][user_input.x] \
+							== self.boat_symbol:
+							return True
+
 				self.print_grid()
 				print("Placing a {} of size {} ".format(boat_name, boat_size), end='')
 				if orientation == 'v': print("verticaly")
@@ -44,36 +55,45 @@ class Map:
 				# Below is not grid_size - 1 as the boat starts on current index
 				if (orientation == 'v' and user_input.y + boat_size > self.grid_size) \
 					or (orientation == 'h' and user_input.x + boat_size > self.grid_size):
-					print("The boat is too big to be placed here")
-					return get_user_input()
+					return 1
+				if (boat_is_on_the_way()):
+					return 2
 				return user_input
 
-			def append_boat_to_boats(boat_size):
+			def append_boat_to_boats():
 				self.boats.append([])
-				while boat_size > 0:
-					# - 1 in both case as the boat starts on user_input.x/y not after
+				for add_me in range(boat_size):
 					if orientation == 'h':
-						self.boats[-1].append({'y': user_input.y, 'x': user_input.x + boat_size - 1})
+						self.boats[-1].append({'y': user_input.y, 'x': user_input.x + add_me})
 					else:
-						self.boats[-1].append({'y': user_input.y + boat_size - 1, 'x': user_input.x})
-					boat_size -= 1
+						self.boats[-1].append({'y': user_input.y + add_me, 'x': user_input.x})
 
-			def write_boad_on_grid():
+			def write_boat_on_grid():
 				for coordinate in self.boats[-1]:
 					self.grid[coordinate['y']][coordinate['x']] = self.boat_symbol
 
-			if i > 0 and cancel_last_placement():
-				remove_boat()
-				return i - 1
-
 			self.print_grid()
+			if i > 0:
+				if cancel_last_placement():
+					remove_boat()
+					return i - 1
+				self.print_grid()
+
 			print("Placing a {name} of size {size}".format(name=boat_name, size=boat_size))
 			orientation = get_orientation()
 			user_input = get_user_input()
-			append_boat_to_boats(boat_size)
-			write_boad_on_grid()
+			while (type(user_input) != Input):
+				self.print_grid()
+				if user_input == 1: print("The boat is too big to be placed here")
+				else: print("There is another boat on the way")
+				orientation = get_orientation()
+				user_input = get_user_input()
 
-		boats_to_add = [
+			append_boat_to_boats()
+			write_boat_on_grid()
+			return i + 1
+
+		boats_to_add = [ # [i][0] == size, [i][1] == name
 			[5, "Carrier"],
 			[4, "Battleship"],
 			[3, "Destroyer"],
@@ -82,10 +102,12 @@ class Map:
 		]
 		i = 0
 		while i < len(boats_to_add):
-			boat_size = boats_to_add[i][0]
-			boat_name = boats_to_add[i][1]
-			i = add_boat(i)
-			if i == len(boats_to_add) - 1 and cancel_last_placement(): i -= 1
+			i = add_boat(boats_to_add[i][0], boats_to_add[i][1], i)
+			if i == len(boats_to_add):
+				self.print_grid()
+				if cancel_last_placement():
+					remove_boat()
+					i -= 1
 
 
 	def print_grid(self):
