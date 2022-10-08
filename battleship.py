@@ -17,6 +17,11 @@ class Map:
         self.boats = []
         self.add_boats()
 
+    def __repr__(self):
+        return "grid: {}\nshoot_grid: {}\nboats: {}\n".format(
+            self.grid, self.shoot_grid, self.boats
+        )
+
     def get_shot_at(self):
         def get_user_input():
             print("Where do you want to shoot?")
