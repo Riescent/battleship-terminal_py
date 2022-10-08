@@ -2,15 +2,73 @@ class Map:
     grid_size = 10
     empty_symbol = " "
     boat_symbol = "x"
+    destroyed_symbol = "X"
+    missed_shot_symbol = "O"
 
     def __init__(self):
         self.grid = []
+        self.shoot_grid = []
         for y in range(self.grid_size):
             self.grid.append([])
+            self.shoot_grid.append([])
             for x in range(self.grid_size):
                 self.grid[y].append(self.empty_symbol)
+                self.shoot_grid[y].append(self.empty_symbol)
         self.boats = []
         self.add_boats()
+
+    def get_shot_at(self):
+        def get_user_input():
+            print("Where do you want to shoot?")
+            user_input = Input()
+            if self.shoot_grid[user_input.y][user_input.x] != " ":
+                print("You already shot these coordinates!")
+                return get_user_input()
+            return user_input
+
+        def get_current_boat():
+            for boat in self.boats:
+                for coordinates in boat:
+                    if (
+                        coordinates["y"] == user_input.y
+                        and coordinates["x"] == user_input.x
+                    ):
+                        return boat
+
+        def get_shot_spot():
+            shot_spot = self.missed_shot_symbol
+            if self.grid[user_input.y][user_input.x] == self.boat_symbol:
+                shot_spot = self.destroyed_symbol
+                for coordinates in get_current_boat():
+                    if (
+                        coordinates["y"] == user_input.y
+                        and coordinates["x"] == user_input.x
+                    ):
+                        coordinates["destroyed"] = True
+                    elif coordinates["destroyed"] == False:
+                        shot_spot = self.boat_symbol
+            return shot_spot
+
+        def write_shot_spot_on_shoot_grid():
+            # If shot_spot == destroyed_symbol it means the whole ship was
+            # destroyed so we mark all of the ship with destroyed_symbol
+            if shot_spot == self.destroyed_symbol:
+                for indexes in get_current_boat():
+                    self.shoot_grid[indexes["y"]][indexes["x"]] = shot_spot
+            else:
+                self.shoot_grid[user_input.y][user_input.x] = shot_spot
+
+        def write_shot_spot_on_normal_grid():
+            if shot_spot == self.missed_shot_symbol:
+                self.grid[user_input.y][user_input.x] = self.missed_shot_symbol
+            else:
+                self.grid[user_input.y][user_input.x] = self.destroyed_symbol
+
+        user_input = get_user_input()
+        # shot_spot is what we need to write to shoot_grid
+        shot_spot = get_shot_spot()
+        write_shot_spot_on_shoot_grid()
+        write_shot_spot_on_normal_grid()
 
     def add_boats(self):
         def cancel_last_placement():
@@ -20,7 +78,7 @@ class Map:
             return True
 
         def remove_boat():
-            self.print_grid()
+            self.print_grid(self.grid)
             for index in self.boats.pop(-1):
                 self.grid[index["y"]][index["x"]] = self.empty_symbol
 
@@ -30,7 +88,7 @@ class Map:
                 print("To place it verticaly enter v")
                 orientation = input().lower()
                 if orientation != "h" and orientation != "v":
-                    self.print_grid()
+                    self.print_grid(self.grid)
                     print("Incorrect input")
                     orientation = get_orientation()
                 return orientation
@@ -51,7 +109,7 @@ class Map:
                         ):
                             return True
 
-                self.print_grid()
+                self.print_grid(self.grid)
                 print("Placing a {} of size {} ".format(boat_name, boat_size), end="")
                 if orientation == "v":
                     print("verticaly")
@@ -73,29 +131,37 @@ class Map:
                 for add_me in range(boat_size):
                     if orientation == "h":
                         self.boats[-1].append(
-                            {"y": user_input.y, "x": user_input.x + add_me}
+                            {
+                                "y": user_input.y,
+                                "x": user_input.x + add_me,
+                                "destroyed": False,
+                            }
                         )
                     else:
                         self.boats[-1].append(
-                            {"y": user_input.y + add_me, "x": user_input.x}
+                            {
+                                "y": user_input.y + add_me,
+                                "x": user_input.x,
+                                "destroyed": False,
+                            }
                         )
 
             def write_boat_on_grid():
                 for index in self.boats[-1]:
                     self.grid[index["y"]][index["x"]] = self.boat_symbol
 
-            self.print_grid()
+            self.print_grid(self.grid)
             if i > 0:
                 if cancel_last_placement():
                     remove_boat()
                     return i - 1
-                self.print_grid()
+                self.print_grid(self.grid)
 
             print("Placing a {} of size {}".format(boat_name, boat_size))
             orientation = get_orientation()
             user_input = get_user_input()
             while type(user_input) != Input:
-                self.print_grid()
+                self.print_grid(self.grid)
                 if user_input == 1:
                     print("The boat is too big to be placed here")
                 else:
@@ -118,22 +184,38 @@ class Map:
         while i < len(boats_to_add):
             i = add_boat(boats_to_add[i][0], boats_to_add[i][1], i)
             if i == len(boats_to_add):
-                self.print_grid()
+                self.print_grid(self.grid)
                 if cancel_last_placement():
                     remove_boat()
                     i -= 1
 
-    def print_grid(self):
+    def print_grid(self, grid):
         print("     A   B   C   D   E   F   G   H   I   J")
         print("   -----------------------------------------")
-        for i in range(len(self.grid)):
+        for i in range(len(grid)):
             if i > 8:
                 print(i + 1, end=" ")
             else:
                 print(" {} ".format(i + 1), end="")
-            for square in self.grid[i]:
+            for square in grid[i]:
                 print("| {} ".format(square), end="")
-            print("|\n   -----------------------------------------")
+            print("|", end="")
+            if i == 0:
+                print(
+                    "  Ships are shown with " + self.boat_symbol,
+                    end="",
+                )
+            elif i == int(self.grid_size / 2) - 1:
+                print(
+                    "  Destroyed ships are shown with " + self.destroyed_symbol,
+                    end="",
+                )
+            elif i == self.grid_size - 1:
+                print(
+                    "  Missed shots are shown with " + self.missed_shot_symbol,
+                    end="",
+                )
+            print("\n   -----------------------------------------")
 
 
 class Input:
