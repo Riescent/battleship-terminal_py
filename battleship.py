@@ -22,6 +22,13 @@ class Map:
             self.grid, self.shoot_grid, self.boats
         )
 
+    def all_ships_are_destroyed(self):
+        for boat in self.boats:
+            for status in boat:
+                if status["destroyed"] == False:
+                    return False
+        return True
+
     def get_shot_at(self):
         def get_user_input():
             print("Where do you want to shoot?")
