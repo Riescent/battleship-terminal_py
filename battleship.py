@@ -84,8 +84,7 @@ class Map:
 
     def add_boats(self):
         def cancel_last_placement():
-            print("To continue: press enter. To cancel: type anything")
-            if input() == "":
+            if input("To continue: press enter. To cancel: type anything: ") == "":
                 return False
             return True
 
@@ -97,8 +96,7 @@ class Map:
         def add_boat(boat_size, boat_name, i):
             def get_orientation():
                 print("To place the boat horizontaly enter h")
-                print("To place it verticaly enter v")
-                orientation = input().lower()
+                orientation = input("To place it verticaly enter v: ").lower()
                 if orientation != "h" and orientation != "v":
                     self.print_grid(self.grid)
                     print("Incorrect input")
@@ -122,7 +120,7 @@ class Map:
                             return True
 
                 self.print_grid(self.grid)
-                print("Placing a {} of size {} ".format(boat_name, boat_size), end="")
+                print(f"Placing a {boat_name} of size {boat_size} ", end="")
                 if orientation == "v":
                     print("verticaly")
                 else:
@@ -131,8 +129,11 @@ class Map:
                 user_input = Input()
                 # Below is not grid_size -1 as the boat starts on current index
                 if (
-                    orientation == "v" and user_input.y + boat_size > self.grid_size
-                ) or (orientation == "h" and user_input.x + boat_size > self.grid_size):
+                      orientation == "v"
+                      and user_input.y + boat_size > self.grid_size
+                ) or (orientation == "h"
+                      and user_input.x + boat_size > self.grid_size
+                ):
                     return 1
                 if boat_is_on_the_way():
                     return 2
@@ -169,7 +170,7 @@ class Map:
                     return i - 1
                 self.print_grid(self.grid)
 
-            print("Placing a {} of size {}".format(boat_name, boat_size))
+            print(f"Placing a {boat_name} of size {boat_size}")
             orientation = get_orientation()
             user_input = get_user_input()
             while type(user_input) != Input:
@@ -208,9 +209,9 @@ class Map:
             if i > 8:
                 print(i + 1, end=" ")
             else:
-                print(" {} ".format(i + 1), end="")
+                print(f" {i + 1} ", end="")
             for square in grid[i]:
-                print("| {} ".format(square), end="")
+                print(f"| {square} ", end="")
             print("|", end="")
             if i == 0:
                 print(
@@ -236,11 +237,10 @@ class Input:
         self.x = self.get_x()
 
     def __repr__(self):
-        return "Input: y == {y}, x == {x}".format(y=self.y, x=self.x)
+        return f"Input: y == {self.y}, x == {self.x}"
 
     def get_x(self):
-        print("Pick x coordinates (letter)")
-        letter = input().upper()
+        letter = input("Pick x coordinates (letter): ").upper()
 
         availible_letters = "ABCDEFGHIJ"
         if len(letter) != 1 or letter not in availible_letters:
@@ -250,10 +250,10 @@ class Input:
         return availible_letters.find(letter)
 
     def get_y(self):
-        print("Pick y coordinates (number)")
-        number = input()
+        number = input("Pick y coordinates (number): ")
 
-        if len(number) == 0 or number not in "1,2,3,4,5,6,7,8,9,10":
+        if (len(number) == 0 or number not in "1,2,3,4,5,6,7,8,9,10"
+            or number == "0"):
             print("Coordinates should be a number between 1 and 10")
             return self.get_y()
 

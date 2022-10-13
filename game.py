@@ -1,4 +1,4 @@
-import os  # Used to clear the terminal using os.system("clear||cls")
+import os # Used to clear the terminal using os.system("clear||cls")
 from battleship import *
 
 
@@ -8,28 +8,27 @@ def clear_terminal():
 
 class Player:
     def __init__(self):
-        print("Input player name")
-        self.name = input()
-        # TODO check if player name is empty
-        print("{} choose where to put your boats".format(self.name))
+        self.name = input("Input player name: ")
+        while self.name == "":
+            self.name = input("Player name can't be empty\nInput player name: ")
+        print(f"{self.name} choose where to put your boats")
         self.map = Map()
         clear_terminal()
 
 
 def win(player_name):
-    print("\n{} won the game, congratulations!\n".format(player_name))
+    print(f"\n{player_name} won the game, congratulations!\n")
 
 
 def press_enter_to_continue(clear_terminal_after_enter=True):
-    print("Press enter to continue...")
-    input()
+    input("Press enter to continue...")
     if clear_terminal_after_enter:
         clear_terminal()
 
 
 def call_next_player(player):
     clear_terminal()
-    print("Stop looking at the screen and call for {}".format(player))
+    print(f"Stop looking at the screen and call for {player}")
     press_enter_to_continue()
 
 
@@ -42,7 +41,7 @@ def play(player, enemy):
         print(players[player].name)
 
     print_grids()
-    print("{} attacks {}".format(players[player].name, players[enemy].name))
+    print(f"{players[player].name} attacks {players[enemy].name}")
     players[enemy].map.get_shot_at()
 
     print_grids()
@@ -58,8 +57,8 @@ def play(player, enemy):
 
 clear_terminal()
 print("Welcome to Battleship terminal py\n")
-players = [Player(), Player()]
 
+players = [Player(), Player()]
 
 call_next_player(players[0].name)
 
